@@ -14,9 +14,13 @@ import json
 import time
 import urllib.request
 
-
+def readAPIKey():
+    with open(f"key.txt", 'r') as f:
+        return f.read()
+                
 #Define API and location variables.
-API = ""
+API = readAPIKey()
+
 COUNTRY_CODE = "us"
 LOCATION_CODE = "17810_PC"
 ZIP_CODE = 41076
