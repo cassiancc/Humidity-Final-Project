@@ -50,25 +50,19 @@ def accuweather(endpoint):
 
 
 # Main function.
-def processLabData():
-    # 1. Request percipitation in the last 24 hours.
-    data = requestData("recent")
-    recentData = processRecentData(data)
+def processRainData():
     # 2. Request current percipitation.
     data = requestData("current")
     currentData = processCurrentData(data)
     # 3. Request future percipitation.
     data = requestData("future")
     futureData = processFutureData(data)
-    if (recentData + currentData + futureData) == 0:
-        print("Irrigating")
-    elif (recentData):
-        print("Not irrigating, as it has rained enough in the last 24 hours.")
-        # thelcd.lcd_display_string("Not Irrigating", 2)
+    if (currentData + futureData) == 0:
+        return "It is not currently raining"
     elif (currentData):
-        print("Not irrigating, as it is currently raining.")  
+        return "It is currently raining."
     elif (futureData):
-        print("Not irrigating, as it is predicted to rain in the next 24 hours.")
+        return "It is predicted to rain in the next 24 hours."
     
 
 # Process weather data from last 24 hours.
@@ -128,8 +122,7 @@ def loadData(requestTo):
 @app.route('/')
 def index():
     data = requestData("recent")
-    temp = processOutsideTemperature(data)
-    return render_template('index.html', temp=temp)
+    return render_template('index.html', temp=processOutsideTemperature(data), rain=processRainData())
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
