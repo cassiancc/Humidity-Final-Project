@@ -1,25 +1,25 @@
+# TODO - Matthias - Automatically make Accuweather requests every 24 hours.
+# TODO - Cassian - Improve dashboard design
+# TODO - Cassian - Make location data configurable in frontend.
+# TODO - Matthias - Build function to handle location data change.
+
+# Standard imports
 import time
 import adafruit_dht
 import board
-dht_device = adafruit_dht.DHT22(board.D4)
-
-
-
+import json
+import urllib.request
 from flask import Flask, render_template
 
+# Setup Flask app and DHT device.
 app = Flask(__name__)
 temp = 5
 
+dhtEnabled = True
 
-# CIT 381 - Spring 2024
-# Author: Cassian Godsted
-# Created: April 16th, 2024
-# Lab 10, Part 3 - Determines whether or not irrigation is needed based on data from AccuWeather. This data is then logged, displayed, and activates a relay.
+if dhtEnabled == True:
+    dht_device = adafruit_dht.DHT22(board.D4)
 
-# Standard imports
-import json
-import time
-import urllib.request
 
 def readAPIKey():
     with open(f"key.txt", 'r') as f:
@@ -129,18 +129,19 @@ def loadData(requestTo):
 @app.route('/')
 def index():
     data = requestData("recent")
-    try:
-        temperature_c = dht_device.temperature
-        temperature_f = temperature_c * (9 / 5) + 32
-        humidity = dht_device.humidity
-        print("Temp:{:.1f} C / {:.1f} F    Humidity: {}%".format(temperature_c, temperature_f, humidity))
-    except RuntimeError as err:
-        print(err.args[0])
-        time.sleep(2.0)
-        temperature_c = dht_device.temperature
-        temperature_f = temperature_c * (9 / 5) + 32
-
-    
+    if dhtEnabled == True:
+        try:
+            temperature_c = dht_device.temperature
+            temperature_f = temperature_c * (9 / 5) + 32
+            humidity = dht_device.humidity
+            print("Temp:{:.1f} C / {:.1f} F    Humidity: {}%".format(temperature_c, temperature_f, humidity))
+        except RuntimeError as err:
+            print(err.args[0])
+            time.sleep(2.0)
+            temperature_c = dht_device.temperature
+            temperature_f = temperature_c * (9 / 5) + 32
+    else:
+        temperature_f = "dht unset"
     return render_template('index.html', temp=processOutsideTemperature(data), rain=processRainData(), localF=temperature_f)
 
 if __name__ == '__main__':
