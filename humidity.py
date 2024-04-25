@@ -94,7 +94,7 @@ def processCurrentData(data):
     substantialRain = data[0]["HasPrecipitation"]
     return substantialRain
 
-# Process current weather data
+# Process future weather data
 def processFutureData(data):
     substantialRain = False
     # Find percentage chance of rain and amount of rain estimated.
