@@ -142,10 +142,12 @@ def index():
             temperature_c = 0
             temperature_f = 0
     else:
-        temperature_f = "dht unset"
+        temperature_f = "60"
     # TODO - READ DATE FROM JSON, BEAUTIFY
     date = "2024-04-26T14:00:00-04:00"
-    return render_template('index.html', temp=processOutsideTemperature(data), rain=processRainData(), localF=temperature_f, datetime=date)
+    # TODO - READ AND PAD ICON ID FROM JSON
+    icon = "01"
+    return render_template('index.html', temp=processOutsideTemperature(data), rain=processRainData(), local=temperature_f, datetime=date, icon=icon)
 
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0', port=5500)

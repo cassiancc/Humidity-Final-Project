@@ -47,3 +47,22 @@ aside {
     bottom: 0;
     background-color: bisque;
 }
+
+#outside-temp-header, #inside-temp-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    padding-right: 2em;
+    padding-left: 2em;
+}
+
+#outside-temp-header img, #inside-temp-header img {
+    height: 7em;
+    width: 12em;
+}
+
+#outside-temp-header span, #inside-temp-header span {
+    margin-top: auto;
+    margin-bottom: auto;
+    font-size: 4em;
+}

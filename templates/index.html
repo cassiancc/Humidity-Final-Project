@@ -14,13 +14,21 @@
         </header>
         <main>
             <div id="inside">
-                <h2>The current inside temperature is {{localF}}F</h2>
+                <div id="inside-temp-header">
+                    <span>{{local}}°</span>
+                    <img id="" src="/static/icons/{{icon}}-s.png" alt="">
+                </div>
+                <h2>The current inside temperature is {{local}}°F</h2>
             </div>
             <div id="summary">
                 <h2>It would be a good idea to close your doors and windows at this time.</h2>
             </div>
             <div id="outside">
-                <h2>The current outside temperature is {{temp}}F</h2>
+                <div id="outside-temp-header">
+                    <span>{{temp}}°</span>
+                    <img id="" src="/static/icons/{{icon}}-s.png" alt="">
+                </div>
+                <h2>The current outside temperature is {{temp}}°F</h2>
                 <h2>{{rain}}</h1>
 
             </div>
