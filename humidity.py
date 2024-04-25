@@ -148,5 +148,5 @@ def index():
     return render_template('index.html', temp=processOutsideTemperature(data), rain=processRainData(), localF=temperature_f, datetime=date)
 
 if __name__ == '__main__':
-    app.run(debug=False, host='10.15.8.249', port=5500)
+    app.run(debug=False, host='0.0.0.0', port=5500)
     
