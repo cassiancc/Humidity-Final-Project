@@ -15,7 +15,7 @@ from flask import Flask, render_template
 app = Flask(__name__)
 temp = 5
 
-dhtEnabled = True
+dhtEnabled = False
 
 if dhtEnabled == True:
     dht_device = adafruit_dht.DHT22(board.D4)
@@ -59,10 +59,10 @@ def accuweather(endpoint):
 # Main function.
 def processRainData():
     # 2. Request current percipitation.
-    data = requestData("current")
+    data = loadData("current")
     currentData = processCurrentData(data)
     # 3. Request future percipitation.
-    data = requestData("future")
+    data = loadData("future")
     futureData = processFutureData(data)
     if (currentData + futureData) == 0:
         return "It is not currently raining"
@@ -123,12 +123,13 @@ def loadData(requestTo):
             return data
     # If requested weather data is not cached, request it from Accuweather.
     except:
-        data = requestData(requestTo)
+        print("Data not cached")
+        # data = requestData(requestTo)
     return data
 
 @app.route('/')
 def index():
-    data = requestData("recent")
+    data = loadData("recent")
     if dhtEnabled == True:
         try:
             temperature_c = dht_device.temperature
@@ -138,12 +139,14 @@ def index():
         except RuntimeError as err:
             print(err.args[0])
             time.sleep(2.0)
-            temperature_c = dht_device.temperature
-            temperature_f = temperature_c * (9 / 5) + 32
+            temperature_c = 0
+            temperature_f = 0
     else:
         temperature_f = "dht unset"
-    return render_template('index.html', temp=processOutsideTemperature(data), rain=processRainData(), localF=temperature_f)
+    # TODO - READ DATE FROM JSON, BEAUTIFY
+    date = "2024-04-26T14:00:00-04:00"
+    return render_template('index.html', temp=processOutsideTemperature(data), rain=processRainData(), localF=temperature_f, datetime=date)
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=False, host='10.15.8.249', port=5500)
     

@@ -5,22 +5,27 @@
     </head>
     <body>
         <header>
-            IoT Temperature Dashboard
+            <h1>IoT Temperature Dashboard</h1>
+            <div id="branding">
+                <p>Powered by</p>
+                <img src="/static/AW_Black_R.png" alt="">
+
+            </div>
         </header>
         <main>
             <div id="inside">
-
+                <h2>The current inside temperature is {{localF}}F</h2>
             </div>
             <div id="summary">
-    
+                <h2>It would be a good idea to close your doors and windows at this time.</h2>
             </div>
             <div id="outside">
-                <h1>The current temperature is {{temp}}F</h1>
-                <h1>{{rain}}</h1>
-                <h1>{{localF}}</h1>
+                <h2>The current outside temperature is {{temp}}F</h2>
+                <h2>{{rain}}</h1>
 
             </div>
         </main>
+        <aside>Data current as of {{datetime}}</aside>
         
         
 
