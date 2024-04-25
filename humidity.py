@@ -46,6 +46,7 @@ def accuweather(endpoint):
     # 3 - Request conditions of the last 24 hours for a location code.
     elif endpoint == "recent":
         apiurl = "http://dataservice.accuweather.com/currentconditions/v1/%s/historical/24?apikey=%s&details=true" % (LOCATION_CODE, API)
+    
     # 4 - Requests five day forecast for a location code
     elif endpoint == "future":
         apiurl = "http://dataservice.accuweather.com/forecasts/v1/daily/5day/%s?apikey=%s&details=true" % (LOCATION_CODE, API)
@@ -70,7 +71,6 @@ def processRainData():
         return "It is currently raining."
     elif (futureData):
         return "It is predicted to rain in the next 24 hours."
-    
 
 # Process weather data from last 24 hours.
 def processRecentData(data):
@@ -87,7 +87,6 @@ def processOutsideTemperature(data):
     # Find inches rained in the last 24 hours.
     temperature = data[0]["Temperature"]["Imperial"]["Value"]
     return temperature
-
 
 # Process current weather data
 def processCurrentData(data):
@@ -114,7 +113,7 @@ def requestData(requestTo):
     with open(f"{requestTo}.json", 'w') as f:
         json.dump(data, f, indent=2) 
         return data
-        
+
 # Test code that reads weather from local files.
 def loadData(requestTo):
     try:
