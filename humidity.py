@@ -145,7 +145,7 @@ def loadData(requestTo):
     # If requested weather data is not cached, request it from Accuweather.
     except:
         print("Data not cached")
-        # data = requestData(requestTo)
+        data = requestData(requestTo)
     return data
 
 # Logic to decide whether to open or close doors
