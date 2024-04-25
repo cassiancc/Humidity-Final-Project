@@ -51,6 +51,10 @@ def accuweather(endpoint):
     elif endpoint == "future":
         apiurl = "http://dataservice.accuweather.com/forecasts/v1/daily/5day/%s?apikey=%s&details=true" % (LOCATION_CODE, API)
 
+    # 5 - Requests 1 hour forecast for a location code
+    elif endpoint == "future1hour":
+        apiurl = "http://dataservice.accuweather.com/forecasts/v1/hourly/1hour/%s?apikey=%s&details=true" % (LOCATION_CODE, API)
+
     # Make request
     with urllib.request.urlopen(apiurl) as url:
         data = json.loads(url.read().decode())
