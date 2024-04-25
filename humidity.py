@@ -1,10 +1,11 @@
-# TODO - Matthias - Automatically make Accuweather requests every 24 hours.
 # TODO - Cassian - Improve dashboard design
 # TODO - Cassian - Make location data configurable in frontend.
 # TODO - Matthias - Build function to handle location data change.
 
 # Standard imports
 import time
+import datetime
+import threading
 import adafruit_dht
 import board
 import json
@@ -130,9 +131,28 @@ def loadData(requestTo):
         # data = requestData(requestTo)
     return data
 
+# TODO Activatable through dashboard
+# Refresh AccuWeather data every hour
+def refreshAccuWeather():
+    now = datetime.datetime.now()
+    # Calculate seconds left until next hour mark
+    secUntilHour = (60 * 60) - (now.second + now.minute * 60)
+    time.sleep(secUntilHour)
+    while True:
+        requestData("current")
+        requestData("future")
+        requestData("future1hour")
+        print("AccuWeather data refreshed")
+        time.sleep(60 * 60)
+
+# Create thread to run AccuWeather refresh data loop
+def startRefreshLoop():
+    threading.Thread(target=refreshAccuWeather, daemon=True).start()
+
 @app.route('/')
 def index():
     data = loadData("recent")
+    startRefreshLoop()
     if dhtEnabled == True:
         try:
             temperature_c = dht_device.temperature
