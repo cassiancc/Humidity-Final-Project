@@ -34,6 +34,12 @@ LOCATION_CODE = "17810_PC"
 ZIP_CODE = 41076
 apiurl = "http://dataservice.accuweather.com/currentconditions/v1/%s?apikey=%s" % (LOCATION_CODE, API)
 
+# TODO Configurable through dashboard
+precipitationProbabilityMax = 70
+maxTempAC = 85
+maxTemp = 75
+minTemp = 65
+
 # Functions that handle requesting data from AccuWeather
 def accuweather(endpoint):
     # 1 - Request location code from ZIP code and country code.
@@ -112,6 +118,17 @@ def processFutureData(data):
             substantialRain = True
     return substantialRain
 
+# Get future temperature from 1 hour forecast
+def getFutureTemperature1Hour(data):
+    return data[0]["Temperature"]["Value"]
+
+# Get substantial rain from 1 hour forecast
+def getFutureSubstantialRain(data):
+    # Find percentage chance of rain and amount of rain estimated.
+    precipitationProbability = data[0]["PrecipitationProbability"]
+    # Chance of Precipitation needs to be higher than max to be considered substantial.
+    return precipitationProbability > precipitationProbabilityMax
+
 # Requests weather data from AccuWeather and store it as JSON.
 def requestData(requestTo):
     data = accuweather(requestTo)
@@ -131,6 +148,36 @@ def loadData(requestTo):
         # data = requestData(requestTo)
     return data
 
+# Logic to decide whether to open or close doors
+def updateDoors():
+    accuWeatherDataFuture = loadData("future1hour")
+    accuWeatherDataCurrent = loadData("current")
+    raining = processCurrentData(accuWeatherDataCurrent)
+    # within the next hour
+    willRain = getFutureSubstantialRain(accuWeatherDataFuture)
+    currentTemp = processOutsideTemperature(accuWeatherDataCurrent)
+    futureTemp = getFutureTemperature1Hour(accuWeatherDataFuture)
+    if raining or willRain:
+        closeDoors()
+    elif currentTemp > maxTemp and currentTemp < maxTempAC:
+        openDoors()
+    elif currentTemp > maxTempAC or currentTemp < minTemp:
+        closeDoors()
+    elif futureTemp > maxTemp and futureTemp < maxTempAC:
+        openDoors("within the next hour")
+    elif futureTemp > maxTempAC or futureTemp < minTemp:
+        closeDoors("within the next hour")
+
+def openDoors(time = "now"):
+    # Recommend to open doors
+    print(f"Please open doors{' ' + time}")
+    # TODO Display on webpage
+
+def closeDoors(time = "now"):
+    # Recommend to close doors
+    print(f"Please close doors{' ' + time}")
+    # TODO Display on webpage
+
 # TODO Activatable through dashboard
 # Refresh AccuWeather data every hour
 def refreshAccuWeather():
@@ -143,6 +190,7 @@ def refreshAccuWeather():
         requestData("future")
         requestData("future1hour")
         print("AccuWeather data refreshed")
+        updateDoors()
         time.sleep(60 * 60)
 
 # Create thread to run AccuWeather refresh data loop
