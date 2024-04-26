@@ -39,6 +39,9 @@ precipitationProbabilityMax = 70
 maxTempAC = 85
 maxTemp = 75
 minTemp = 65
+refreshOnAccess = False
+
+lock = threading.Lock()
 
 # Functions that handle requesting data from AccuWeather
 def accuweather(endpoint):
@@ -179,27 +182,35 @@ def closeDoors(time = "now"):
     # TODO Display on webpage
 
 # TODO Activatable through dashboard
-# Refresh AccuWeather data every hour
+# Refresh AccuWeather data
 def refreshAccuWeather():
+    lock.acquire()
+    requestData("current")
+    requestData("future")
+    requestData("future1hour")
+    print("AccuWeather data refreshed")
+    updateDoors()
+    lock.release()
+
+# Refresh AccuWeather data every hour
+def refreshAccuWeatherLoop():
     now = datetime.datetime.now()
     # Calculate seconds left until next hour mark
     secUntilHour = (60 * 60) - (now.second + now.minute * 60)
     print(f"Will refresh data in {secUntilHour / 60:.2f} minutes")
     time.sleep(secUntilHour)
     while True:
-        requestData("current")
-        requestData("future")
-        requestData("future1hour")
-        print("AccuWeather data refreshed")
-        updateDoors()
+        refreshAccuWeather()
         time.sleep(60 * 60)
 
 # Create thread to run AccuWeather refresh data loop
 def startRefreshLoop():
-    threading.Thread(target=refreshAccuWeather, daemon=True).start()
+    threading.Thread(target=refreshAccuWeatherLoop, daemon=True).start()
 
 @app.route('/')
 def index():
+    if refreshOnAccess:
+        refreshAccuWeather()
     data = loadData("recent")
     if dhtEnabled == True:
         try:
