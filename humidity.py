@@ -6,8 +6,6 @@
 import time
 import datetime
 import threading
-import adafruit_dht
-import board
 import json
 import urllib.request
 from flask import Flask, render_template
@@ -19,6 +17,8 @@ temp = 5
 dhtEnabled = False
 
 if dhtEnabled == True:
+    import adafruit_dht
+    import board
     dht_device = adafruit_dht.DHT22(board.D4)
 
 
