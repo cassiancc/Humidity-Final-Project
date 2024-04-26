@@ -199,6 +199,7 @@ def warnCloseDoors(reason: str):
 # Refresh AccuWeather data
 def refreshAccuWeather():
     lock.acquire()
+    requestData("recent")
     requestData("current")
     requestData("future")
     requestData("future1hour")
