@@ -21,7 +21,6 @@ if dhtEnabled == True:
     import board
     dht_device = adafruit_dht.DHT22(board.D4)
 
-
 def readAPIKey():
     with open(f"key.txt", 'r') as f:
         return f.read()
@@ -36,11 +35,14 @@ apiurl = "http://dataservice.accuweather.com/currentconditions/v1/%s?apikey=%s" 
 
 # TODO Configurable through dashboard
 precipitationProbabilityMax = 70
-maxTempAC = 85
-maxTemp = 75
+# Above maxTemp we suggest to close doors and turn on the AC
+maxTemp = 80
+# Between minTemp and maxTemp we open doors
 minTemp = 65
+# Below minTemp we close doors
 refreshOnAccess = False
 
+# Lock for refreshing AccuWeather data
 lock = threading.Lock()
 
 # Functions that handle requesting data from AccuWeather
@@ -160,26 +162,38 @@ def updateDoors():
     willRain = getFutureSubstantialRain(accuWeatherDataFuture)
     currentTemp = processOutsideTemperature(accuWeatherDataCurrent)
     futureTemp = getFutureTemperature1Hour(accuWeatherDataFuture)
-    if raining or willRain:
-        closeDoors()
-    elif currentTemp > maxTemp and currentTemp < maxTempAC:
-        openDoors()
-    elif currentTemp > maxTempAC or currentTemp < minTemp:
-        closeDoors()
-    elif futureTemp > maxTemp and futureTemp < maxTempAC:
-        openDoors("within the next hour")
-    elif futureTemp > maxTempAC or futureTemp < minTemp:
-        closeDoors("within the next hour")
+    # Determine whether to open/close doors right now
+    if raining:
+        closeDoors(reason="It is currently raining")
+    elif currentTemp > maxTemp:
+        closeDoors(reason="Current temperature is too hot")
+    elif currentTemp < minTemp:
+        closeDoors(reason="Current temperature is too cold")
+    else:
+        openDoors(reason="Current temperature is preferred")
+    # Determine whether to open/close doors in 1 hour
+    if willRain:
+        warnCloseDoors(reason="It is likely to rain within the next hour")
+    elif futureTemp > maxTemp:
+        warnCloseDoors(reason="Future temperature is too hot")
+    elif futureTemp < minTemp:
+        warnCloseDoors(reason="Future temperature is too cold")
+    else:
+        warnOpenDoors(reason="Future temperature is preferred")
 
-def openDoors(time = "now"):
-    # Recommend to open doors
-    print(f"Please open doors{' ' + time}")
-    # TODO Display on webpage
+# TODO Display these messages on webpage
 
-def closeDoors(time = "now"):
-    # Recommend to close doors
-    print(f"Please close doors{' ' + time}")
-    # TODO Display on webpage
+def openDoors(reason: str):
+    print(f"Please open doors now\n{reason}")
+
+def closeDoors(reason: str):
+    print(f"Please close doors now\n{reason}")
+
+def warnOpenDoors(reason: str):
+    print(f"Please open doors within the next hour\n{reason}")
+
+def warnCloseDoors(reason: str):
+    print(f"Please close doors within the next hour\n{reason}")
 
 # TODO Activatable through dashboard
 # Refresh AccuWeather data
