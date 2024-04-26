@@ -184,6 +184,7 @@ def refreshAccuWeather():
     now = datetime.datetime.now()
     # Calculate seconds left until next hour mark
     secUntilHour = (60 * 60) - (now.second + now.minute * 60)
+    print(f"Will refresh data in {secUntilHour / 60:.2f} minutes")
     time.sleep(secUntilHour)
     while True:
         requestData("current")
@@ -200,7 +201,6 @@ def startRefreshLoop():
 @app.route('/')
 def index():
     data = loadData("recent")
-    startRefreshLoop()
     if dhtEnabled == True:
         try:
             temperature_c = dht_device.temperature
@@ -221,5 +221,6 @@ def index():
     return render_template('index.html', temp=processOutsideTemperature(data), rain=processRainData(), local=temperature_f, datetime=date, icon=icon)
 
 if __name__ == '__main__':
+    startRefreshLoop()
     app.run(debug=False, host='0.0.0.0', port=5500)
     
