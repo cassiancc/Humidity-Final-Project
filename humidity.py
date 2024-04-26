@@ -33,14 +33,14 @@ LOCATION_CODE = "17810_PC"
 ZIP_CODE = 41076
 apiurl = "http://dataservice.accuweather.com/currentconditions/v1/%s?apikey=%s" % (LOCATION_CODE, API)
 
-# TODO Configurable through dashboard
+# TODO Below should be configurable through dashboard
+refreshOnAccess = False
 precipitationProbabilityMax = 70
 # Above maxTemp we suggest to close doors and turn on the AC
 maxTemp = 80
 # Between minTemp and maxTemp we open doors
 minTemp = 65
 # Below minTemp we close doors
-refreshOnAccess = False
 
 # Lock for refreshing AccuWeather data
 lock = threading.Lock()
@@ -184,16 +184,16 @@ def updateDoors():
 # TODO Display these messages on webpage
 
 def openDoors(reason: str):
-    print(f"Please open doors now\n{reason}")
+    print(f"Please open doors now\nReason: {reason}")
 
 def closeDoors(reason: str):
-    print(f"Please close doors now\n{reason}")
+    print(f"Please close doors now\nReason: {reason}")
 
 def warnOpenDoors(reason: str):
-    print(f"Please open doors within the next hour\n{reason}")
+    print(f"Please open doors within the next hour\nReason: {reason}")
 
 def warnCloseDoors(reason: str):
-    print(f"Please close doors within the next hour\n{reason}")
+    print(f"Please close doors within the next hour\nReason: {reason}")
 
 # TODO Activatable through dashboard
 # Refresh AccuWeather data
