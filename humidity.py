@@ -138,14 +138,13 @@ def getFutureSubstantialRain(data):
     # Chance of Precipitation needs to be higher than max to be considered substantial.
     return precipitationProbability > precipitationProbabilityMax
 
-def getCurrentZipAndCountryCode():
+# Get country code and zip code from IP
+def getCurrentLocationCodes():
     with urllib.request.urlopen("https://ipapi.co/json") as url:
         data = json.loads(url.read().decode())
-    global COUNTRY_CODE
-    global ZIP_CODE
-    COUNTRY_CODE = data["country_code"].lower()
-    ZIP_CODE = data["postal"]
+    setLocationCode(countryCode=data["country_code"].lower(), zipCode=data["postal"])
 
+# Set location code from country and zip code
 def setLocationCode(countryCode: str, zipCode: str):
     global COUNTRY_CODE
     global ZIP_CODE
@@ -281,7 +280,7 @@ def index():
     return render_template('index.html', temp=processOutsideTemperature(data), insideHumidity=humidity, doors=updateDoors(), Fdoors=updateFutureDoors(), rain=processRainData(), local=temperature_f, datetime=date, icon=findOutsideIcon(data))
 
 if __name__ == '__main__':
-    getCurrentZipAndCountryCode()
+    getCurrentLocationCodes()
     startRefreshLoop()
     app.run(debug=False, host='0.0.0.0', port=5500)
     
