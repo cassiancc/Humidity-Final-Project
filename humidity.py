@@ -151,7 +151,7 @@ def setLocationCode(countryCode: str, zipCode: str):
     global LOCATION_CODE
     COUNTRY_CODE = countryCode
     ZIP_CODE = zipCode
-    data = loadData("location")
+    data = requestData("location")
     LOCATION_CODE = data[0]["Key"]
 
 # Requests weather data from AccuWeather and store it as JSON.
