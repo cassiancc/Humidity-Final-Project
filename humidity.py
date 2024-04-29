@@ -14,7 +14,7 @@ from flask import Flask, render_template
 app = Flask(__name__)
 temp = 5
 
-dhtEnabled = False
+dhtEnabled = True
 
 if dhtEnabled == True:
     import adafruit_dht
@@ -104,6 +104,11 @@ def processOutsideTemperature(data):
     temperature = data[0]["Temperature"]["Imperial"]["Value"]
     return temperature
 
+def findOutsideIcon(data):
+    icon = data[0]["WeatherIcon"]
+    icon = f'{icon:02}'
+    return icon
+
 # Process current weather data
 def processCurrentData(data):
     # Find if its currently raining. In this case, any rain is "substantial rain."
@@ -155,45 +160,53 @@ def loadData(requestTo):
 
 # Logic to decide whether to open or close doors
 def updateDoors():
-    accuWeatherDataFuture = loadData("future1hour")
     accuWeatherDataCurrent = loadData("current")
     raining = processCurrentData(accuWeatherDataCurrent)
     # within the next hour
-    willRain = getFutureSubstantialRain(accuWeatherDataFuture)
     currentTemp = processOutsideTemperature(accuWeatherDataCurrent)
-    futureTemp = getFutureTemperature1Hour(accuWeatherDataFuture)
+    doors = ""
     # Determine whether to open/close doors right now
     if raining:
-        closeDoors(reason="It is currently raining")
+        doors = closeDoors(reason="It is currently raining")
     elif currentTemp > maxTemp:
-        closeDoors(reason="Current temperature is too hot")
+        doors = closeDoors(reason="The current temperature is too hot")
     elif currentTemp < minTemp:
-        closeDoors(reason="Current temperature is too cold")
+        doors = closeDoors(reason="The current temperature is too cold")
     else:
-        openDoors(reason="Current temperature is preferred")
+        doors = openDoors(reason="The current temperature is preferred")
+    return doors
+# Logic to decide whether to open or close doors
+
+def updateFutureDoors():
+    accuWeatherDataFuture = loadData("future1hour")
+    # within the next hour
+    willRain = getFutureSubstantialRain(accuWeatherDataFuture)
+    futureTemp = getFutureTemperature1Hour(accuWeatherDataFuture)
+    Fdoors = ""
     # Determine whether to open/close doors in 1 hour
     if willRain:
-        warnCloseDoors(reason="It is likely to rain within the next hour")
+        Fdoors = warnCloseDoors(reason="It is likely to rain within the next hour")
     elif futureTemp > maxTemp:
-        warnCloseDoors(reason="Future temperature is too hot")
+         Fdoors = warnCloseDoors(reason="Future temperature is too hot")
     elif futureTemp < minTemp:
-        warnCloseDoors(reason="Future temperature is too cold")
+         Fdoors = warnCloseDoors(reason="Future temperature is too cold")
     else:
-        warnOpenDoors(reason="Future temperature is preferred")
+         FDoors = warnOpenDoors(reason="Future temperature is preferred")
+    return Fdoors
 
 # TODO Display these messages on webpage
 
 def openDoors(reason: str):
-    print(f"Please open doors now\nReason: {reason}")
+    return f"{reason}. You should open your doors now. "
 
 def closeDoors(reason: str):
-    print(f"Please close doors now\nReason: {reason}")
+    return f"{reason}. You should close your doors now. "
 
 def warnOpenDoors(reason: str):
-    print(f"Please open doors within the next hour\nReason: {reason}")
+    return f"Please open doors within the next hour. {reason}"
 
 def warnCloseDoors(reason: str):
-    print(f"Please close doors within the next hour\nReason: {reason}")
+    return f"Please close doors within the next hour.  {reason}"
 
 # TODO Activatable through dashboard
 # Refresh AccuWeather data
@@ -235,16 +248,20 @@ def index():
             print("Temp:{:.1f} C / {:.1f} F    Humidity: {}%".format(temperature_c, temperature_f, humidity))
         except RuntimeError as err:
             print(err.args[0])
-            time.sleep(2.0)
             temperature_c = 0
             temperature_f = 0
+            time.sleep(3.0)
+            temperature_c = dht_device.temperature
+            temperature_f = temperature_c * (9 / 5) + 32
+            humidity = dht_device.humidity
+            print("Temp:{:.1f} C / {:.1f} F    Humidity: {}%".format(temperature_c, temperature_f, humidity))
+            
     else:
         temperature_f = "60"
     # TODO - READ DATE FROM JSON, BEAUTIFY
     date = "2024-04-26T14:00:00-04:00"
     # TODO - READ AND PAD ICON ID FROM JSON
-    icon = "01"
-    return render_template('index.html', temp=processOutsideTemperature(data), rain=processRainData(), local=temperature_f, datetime=date, icon=icon)
+    return render_template('index.html', temp=processOutsideTemperature(data), doors=updateDoors(), Fdoors=updateFutureDoors(), rain=processRainData(), local=temperature_f, datetime=date, icon=findOutsideIcon(data))
 
 if __name__ == '__main__':
     startRefreshLoop()
