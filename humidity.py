@@ -82,7 +82,7 @@ def processRainData():
     data = loadData("future")
     futureData = processFutureData(data)
     if (currentData + futureData) == 0:
-        return "It is not currently raining"
+        return "It is not currently raining."
     elif (currentData):
         return "It is currently raining."
     elif (futureData):
