@@ -187,26 +187,26 @@ def updateFutureDoors():
     if willRain:
         Fdoors = warnCloseDoors(reason="It is likely to rain within the next hour")
     elif futureTemp > maxTemp:
-         Fdoors = warnCloseDoors(reason="Future temperature is too hot")
+         Fdoors = warnCloseDoors(reason="The future temperature is too hot")
     elif futureTemp < minTemp:
-         Fdoors = warnCloseDoors(reason="Future temperature is too cold")
+         Fdoors = warnCloseDoors(reason="The future temperature is too cold")
     else:
-         FDoors = warnOpenDoors(reason="Future temperature is preferred")
+         Fdoors = warnOpenDoors(reason="The future temperature is preferred")
     return Fdoors
 
 # TODO Display these messages on webpage
 
 def openDoors(reason: str):
-    return f"{reason}. You should open your doors now. "
+    return f"{reason}. You should open your doors and windows now. "
 
 def closeDoors(reason: str):
-    return f"{reason}. You should close your doors now. "
+    return f"{reason}. You should close your doors and windows now. "
 
 def warnOpenDoors(reason: str):
-    return f"Please open doors within the next hour. {reason}"
+    return f"{reason}. You should open your doors and windows within the next hour."
 
 def warnCloseDoors(reason: str):
-    return f"Please close doors within the next hour.  {reason}"
+    return f"{reason}. You should close your doors and windows within the next hour. "
 
 # TODO Activatable through dashboard
 # Refresh AccuWeather data
@@ -250,6 +250,7 @@ def index():
             print(err.args[0])
             temperature_c = 0
             temperature_f = 0
+            humidity = 0
             time.sleep(3.0)
             temperature_c = dht_device.temperature
             temperature_f = temperature_c * (9 / 5) + 32
@@ -261,7 +262,7 @@ def index():
     # TODO - READ DATE FROM JSON, BEAUTIFY
     date = "2024-04-26T14:00:00-04:00"
     # TODO - READ AND PAD ICON ID FROM JSON
-    return render_template('index.html', temp=processOutsideTemperature(data), doors=updateDoors(), Fdoors=updateFutureDoors(), rain=processRainData(), local=temperature_f, datetime=date, icon=findOutsideIcon(data))
+    return render_template('index.html', temp=processOutsideTemperature(data), insideHumidity=humidity, doors=updateDoors(), Fdoors=updateFutureDoors(), rain=processRainData(), local=temperature_f, datetime=date, icon=findOutsideIcon(data))
 
 if __name__ == '__main__':
     startRefreshLoop()
