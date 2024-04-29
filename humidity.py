@@ -139,6 +139,15 @@ def getFutureSubstantialRain(data):
     # Chance of Precipitation needs to be higher than max to be considered substantial.
     return precipitationProbability > precipitationProbabilityMax
 
+def setLocationCode(countryCode: str, zipCode: str):
+    global COUNTRY_CODE
+    global ZIP_CODE
+    global LOCATION_CODE
+    COUNTRY_CODE = countryCode
+    ZIP_CODE = zipCode
+    data = loadData("location")
+    LOCATION_CODE = data[0]["Key"]
+
 # Requests weather data from AccuWeather and store it as JSON.
 def requestData(requestTo):
     data = accuweather(requestTo)
