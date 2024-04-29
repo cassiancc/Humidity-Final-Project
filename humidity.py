@@ -1,6 +1,5 @@
 # TODO - Cassian - Improve dashboard design
 # TODO - Cassian - Make location data configurable in frontend.
-# TODO - Matthias - Build function to handle location data change.
 
 # Standard imports
 import time
@@ -28,9 +27,9 @@ def readAPIKey():
 #Define API and location variables.
 API = readAPIKey()
 
-COUNTRY_CODE = "us"
-LOCATION_CODE = "17810_PC"
-ZIP_CODE = 41076
+COUNTRY_CODE = None
+LOCATION_CODE = None
+ZIP_CODE = None
 apiurl = "http://dataservice.accuweather.com/currentconditions/v1/%s?apikey=%s" % (LOCATION_CODE, API)
 
 # TODO Below should be configurable through dashboard
@@ -138,6 +137,14 @@ def getFutureSubstantialRain(data):
     precipitationProbability = data[0]["PrecipitationProbability"]
     # Chance of Precipitation needs to be higher than max to be considered substantial.
     return precipitationProbability > precipitationProbabilityMax
+
+def getCurrentZipAndCountryCode():
+    with urllib.request.urlopen("https://ipapi.co/json") as url:
+        data = json.loads(url.read().decode())
+    global COUNTRY_CODE
+    global ZIP_CODE
+    COUNTRY_CODE = data["country_code"].lower()
+    ZIP_CODE = data["postal"]
 
 def setLocationCode(countryCode: str, zipCode: str):
     global COUNTRY_CODE
@@ -274,6 +281,7 @@ def index():
     return render_template('index.html', temp=processOutsideTemperature(data), insideHumidity=humidity, doors=updateDoors(), Fdoors=updateFutureDoors(), rain=processRainData(), local=temperature_f, datetime=date, icon=findOutsideIcon(data))
 
 if __name__ == '__main__':
+    getCurrentZipAndCountryCode()
     startRefreshLoop()
     app.run(debug=False, host='0.0.0.0', port=5500)
     
