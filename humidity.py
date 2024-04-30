@@ -256,36 +256,29 @@ def refreshAccuWeatherLoop():
 def startRefreshLoop():
     threading.Thread(target=refreshAccuWeatherLoop, daemon=True).start()
 
+def readDHT(read):
+    if dhtEnabled == True:
+        if read == "f":
+            temperature_c = dht_device.temperature
+            temperature_f = temperature_c * (9 / 5) + 32
+            temperature_f = f'{temperature_f:.1f}'
+            return temperature_f
+        elif read == "c":
+            temperature_c = f'{dht_device.temperature:.1f}'
+            return temperature_c
+        elif read == "h":
+            humidity = f'{dht_device.humidity:.1f}'
+            return humidity
+    else:
+        return 60
+
 @app.route('/')
 def index():
     if refreshOnAccess:
         refreshAccuWeather()
     data = loadData("recent")
-    if dhtEnabled == True:
-        try:
-            temperature_c = dht_device.temperature
-            temperature_f = temperature_c * (9 / 5) + 32
-            humidity = dht_device.humidity
-            print("Temp:{:.1f} C / {:.1f} F    Humidity: {}%".format(temperature_c, temperature_f, humidity))
-        except RuntimeError as err:
-            print(err.args[0])
-            temperature_c = 0
-            temperature_f = 0
-            humidity = 0
-            time.sleep(3.0)
-            temperature_c = dht_device.temperature
-            temperature_f = temperature_c * (9 / 5) + 32
-            humidity = dht_device.humidity
-            print("Temp:{:.1f} C / {:.1f} F    Humidity: {}%".format(temperature_c, temperature_f, humidity))
-            
-    else:
-        temperature_f = "60"
-        temperature_c = "60"
-        humidity = "60"
-    temperature_f = f'{temperature_f:.1f}'
-    temperature_c = f'{temperature_c:.1f}'
-    print(temperature_f)
-    return render_template('index.html', temp=processOutsideTemperature(data), insideHumidity=humidity, doors=updateDoors(), Fdoors=updateFutureDoors(), rain=processRainData(), local=temperature_f, datetime=findDate(data), icon=findOutsideIcon(data))
+    current = loadData("current")
+    return render_template('index.html', temp=processOutsideTemperature(current), insideHumidity=readDHT("c"), doors=updateDoors(), Fdoors=updateFutureDoors(), rain=processRainData(), local=readDHT("f"), datetime=findDate(data), icon=findOutsideIcon(current))
 
 if __name__ == '__main__':
     getCurrentLocationCodes()
