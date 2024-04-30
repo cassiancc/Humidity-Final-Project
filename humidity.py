@@ -23,6 +23,8 @@ def create():
         if 'metric' in request.form:
             global units
             units = "C"
+        else:
+            units = "F"
         if "zip" in request.form:
             if request.form["zip"] != "":
                 print(f"Zip value {request.form['zip']}")
@@ -359,7 +361,7 @@ def index():
         refreshAccuWeather()
     data = loadData("recent")
     current = loadData("current")
-    temperature = f'{processOutsideTemperature(current):.1f}'
+    temperature = f'{processOutsideTemperature(current):.1f}°{units}'
 
     return render_template('index.html', temp=temperature, insideHumidity=readDHT("H"), doors=updateDoors(), Fdoors=updateFutureDoors(), rain=processRainData(), local=readDHT(units), datetime=findDate(data), text=findWeatherText(current), icon=findOutsideIcon(current))
 
