@@ -13,6 +13,8 @@ pip install flask
 python3 humidity.py
 ```
 
+You'll need to provide an Accuweather API key as key.txt for the service to work. 
+
 ## Create service
 Create a service file named humidity.
 ```bash
