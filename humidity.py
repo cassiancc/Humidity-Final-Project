@@ -108,6 +108,12 @@ def findOutsideIcon(data):
     icon = f'{icon:02}'
     return icon
 
+def findDate(data):
+    date = data[0]["LocalObservationDateTime"]
+    date = f'{date}'
+    return date
+
+
 # Process current weather data
 def processCurrentData(data):
     # Find if its currently raining. In this case, any rain is "substantial rain."
@@ -274,10 +280,12 @@ def index():
             
     else:
         temperature_f = "60"
-    # TODO - READ DATE FROM JSON, BEAUTIFY
-    date = "2024-04-26T14:00:00-04:00"
-    # TODO - READ AND PAD ICON ID FROM JSON
-    return render_template('index.html', temp=processOutsideTemperature(data), insideHumidity=humidity, doors=updateDoors(), Fdoors=updateFutureDoors(), rain=processRainData(), local=temperature_f, datetime=date, icon=findOutsideIcon(data))
+        temperature_c = "60"
+        humidity = "60"
+    temperature_f = f'{temperature_f:.1f}'
+    temperature_c = f'{temperature_c:.1f}'
+    print(temperature_f)
+    return render_template('index.html', temp=processOutsideTemperature(data), insideHumidity=humidity, doors=updateDoors(), Fdoors=updateFutureDoors(), rain=processRainData(), local=temperature_f, datetime=findDate(data), icon=findOutsideIcon(data))
 
 if __name__ == '__main__':
     getCurrentLocationCodes()
