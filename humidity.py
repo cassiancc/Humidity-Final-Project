@@ -2,17 +2,27 @@
 # TODO - Cassian - Make location data configurable in frontend.
 
 # Standard imports
-import os
-import time
-import datetime
-import threading
-import json
-import urllib.request
-from flask import Flask, render_template
+import time, datetime, threading, json, urllib.request, os
+from flask import Flask, render_template, request, url_for, flash, redirect
+from wtforms import Form, BooleanField, StringField, PasswordField, validators
 
 # Setup Flask app and DHT device.
 app = Flask(__name__)
+app.config['SECRET_KEY'] = os.urandom(24).hex()    
 temp = 5
+units = "F"
+
+@app.route('/settings/', methods=('GET', 'POST'))
+def create():
+    if request.method == 'POST':
+        if 'metric' in request.form:
+            global units
+            units = "C"
+        if "zip" in request.form:
+            if request.form["zip"] != "":
+                print(f"Zip value {request.form['zip']}")
+        return redirect(url_for('index'))
+    return render_template('settings.html')
 
 # While testing, allow for disabling DHT-22 to prevent crashes.
 dhtEnabled = True
@@ -97,8 +107,11 @@ def processRainData():
 def processRecentData(data):
     substantialRain = False
     # Find inches rained in the last 24 hours.
-    inchesRained = data[0]["PrecipitationSummary"]["Past24Hours"]["Imperial"]["Value"]
-    # thelcd.lcd_display_string(f"Rain: {inchesRained}in")
+    if units == "C":
+        unitType = "Metric"
+    else:
+        unitType = "Imperial"
+    inchesRained = data[0]["PrecipitationSummary"]["Past24Hours"][unitType]["Value"]
     if inchesRained > 0.15:
         substantialRain = True
     return substantialRain
@@ -106,7 +119,11 @@ def processRecentData(data):
 # Process weather data from last 24 hours.
 def processOutsideTemperature(data):
     # Find inches rained in the last 24 hours.
-    temperature = data[0]["Temperature"]["Imperial"]["Value"]
+    if units == "C":
+        unitType = "Metric"
+    else:
+        unitType = "Imperial"
+    temperature = data[0]["Temperature"][unitType]["Value"]
     return temperature
 
 def findOutsideIcon(data):
@@ -169,8 +186,12 @@ def setLocationCode(countryCode: str, zipCode: str):
     global LOCATION_CODE
     COUNTRY_CODE = countryCode
     ZIP_CODE = zipCode
-    data = requestData("location")
-    LOCATION_CODE = data[0]["Key"]
+    try:
+        data = requestData("location")
+        LOCATION_CODE = data[0]["Key"]
+    except:
+        data = 41076
+        LOCATION_CODE = "17810_PC"
 
 # Requests weather data from AccuWeather and store it as JSON.
 def requestData(requestTo):
@@ -245,11 +266,14 @@ def warnCloseDoors(reason: str):
 # Refresh AccuWeather data
 def refreshAccuWeather():
     lock.acquire()
-    requestData("recent")
-    requestData("current")
-    requestData("future")
-    requestData("future1hour")
-    print("AccuWeather data refreshed")
+    try:
+        requestData("recent")
+        requestData("current")
+        requestData("future")
+        requestData("future1hour")
+        print("AccuWeather data refreshed")
+    except:
+        print("Unauthorized!")
     updateDoors()
     lock.release()
 
@@ -270,32 +294,34 @@ def startRefreshLoop():
 
 def readDHT(read):
     if dhtEnabled == True:
-        if read == "f":
+        if read == "F":
             try:
                 temperature_c = dht_device.temperature
                 temperature_f = temperature_c * (9 / 5) + 32
-                temperature_f = f'{temperature_f:.1f}'
                 with open("dhtf.json", 'w') as f:
                     json.dump(temperature_f, f, indent=2) 
+                temperature_f = f'{temperature_f:.1f}°F'
                 return temperature_f
             except RuntimeError as err:
                 print(err)
                 with open("dhtf.json", 'r') as f:
                     temperature_f = json.load(f)
+                    temperature_f = f'{temperature_f:.1f}°F'
                     return temperature_f
-        elif read == "c":
+        elif read == "C":
             try:
                 temperature_c = dht_device.temperature
-                temperature_c = f'{temperature_c:.1f}'
                 with open("dhtc.json", 'w') as f:
                     json.dump(temperature_c, f, indent=2) 
+                temperature_c = f'{temperature_c:.1f}°C'
                 return temperature_c
             except RuntimeError as err:
                 print(err)
                 with open("dhtc.json", 'r') as f:
                     temperature_c = json.load(f)
+                    temperature_c = f'{temperature_c:.1f}°C'
                     return temperature_c
-        elif read == "h":
+        elif read == "H":
             try:
                 humidity = f'{dht_device.humidity:.1f}'
                 with open("dhth.json", 'w') as f:
@@ -315,7 +341,9 @@ def index():
         refreshAccuWeather()
     data = loadData("recent")
     current = loadData("current")
-    return render_template('index.html', temp=processOutsideTemperature(current), insideHumidity=readDHT("c"), doors=updateDoors(), Fdoors=updateFutureDoors(), rain=processRainData(), local=readDHT("f"), datetime=findDate(data), text=findWeatherText(current), icon=findOutsideIcon(current))
+    temperature = f'{processOutsideTemperature(current):.1f}'
+
+    return render_template('index.html', temp=temperature, insideHumidity=readDHT("H"), doors=updateDoors(), Fdoors=updateFutureDoors(), rain=processRainData(), local=readDHT(units), datetime=findDate(data), text=findWeatherText(current), icon=findOutsideIcon(current))
 
 if __name__ == '__main__':
     getCurrentLocationCodes()

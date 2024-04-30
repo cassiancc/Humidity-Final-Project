@@ -1,0 +1,39 @@
+<html>
+    <head>
+        <title>IoT Temperature Dashboard</title>
+        <link rel="stylesheet" href="/static/style.css">
+    </head>
+    <body>
+        <header>
+            <h1>IoT Temperature Dashboard</h1>
+            <div id="branding">
+                <p>Powered by</p>
+                <a target="_blank" href="https://accuweather.com/"><img src="/static/AW_Black_R.png" alt=""></a>
+            </div>
+        </header>
+        <main>
+            <div id="inside">
+                <h1>{% block title %} Add a New Message {% endblock %}</h1>
+
+                <form action="/settings" method="post">
+                    <label for="title">Title</label>
+                    <br>
+                    <input type="checkbox" name="metric" checked="{{request.form['metric']}}" id="metric">
+                    <label for="metric">Use Metric measurements (Celsius)</label>
+                    <br>
+                    <input type="number" name="zip" id="zip" placeholder="Your zip code" value="{{request.form['zip']}}">
+                    <br>
+                    <button type="submit">Submit</button>
+                </form>
+            </div>
+    
+        
+        
+<script>
+    console.log("Automatic reload set at 5 minutes.")
+setTimeout(() => {
+    location.reload()
+  }, 300000);
+</script>
+    </body>
+</html>
