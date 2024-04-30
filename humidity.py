@@ -13,12 +13,17 @@ from flask import Flask, render_template
 app = Flask(__name__)
 temp = 5
 
+# While testing, allow for disabling DHT-22 to prevent crashes.
 dhtEnabled = True
 
 if dhtEnabled == True:
     import adafruit_dht
     import board
-    dht_device = adafruit_dht.DHT22(board.D4)
+    try:
+        dht_device = adafruit_dht.DHT22(board.D4)
+    except RuntimeError as err:
+        print(err)
+        dhtEnabled = False
 
 def readAPIKey():
     with open(f"key.txt", 'r') as f:
@@ -264,16 +269,41 @@ def startRefreshLoop():
 def readDHT(read):
     if dhtEnabled == True:
         if read == "f":
-            temperature_c = dht_device.temperature
-            temperature_f = temperature_c * (9 / 5) + 32
-            temperature_f = f'{temperature_f:.1f}'
-            return temperature_f
+            try:
+                temperature_c = dht_device.temperature
+                temperature_f = temperature_c * (9 / 5) + 32
+                temperature_f = f'{temperature_f:.1f}'
+                with open("dhtf.json", 'w') as f:
+                    json.dump(temperature_f, f, indent=2) 
+                return temperature_f
+            except RuntimeError as err:
+                print(err)
+                with open("dhtf.json", 'r') as f:
+                    temperature_f = json.load(f)
+                    return temperature_f
         elif read == "c":
-            temperature_c = f'{dht_device.temperature:.1f}'
-            return temperature_c
+            try:
+                temperature_c = dht_device.temperature
+                temperature_c = f'{temperature_c:.1f}'
+                with open("dhtc.json", 'w') as f:
+                    json.dump(temperature_c, f, indent=2) 
+                return temperature_c
+            except RuntimeError as err:
+                print(err)
+                with open("dhtc.json", 'r') as f:
+                    temperature_c = json.load(f)
+                    return temperature_c
         elif read == "h":
-            humidity = f'{dht_device.humidity:.1f}'
-            return humidity
+            try:
+                humidity = f'{dht_device.humidity:.1f}'
+                with open("dhth.json", 'w') as f:
+                    json.dump(humidity, f, indent=2) 
+                return humidity
+            except RuntimeError as err:
+                print(err)
+                with open("dhth.json", 'r') as f:
+                    humidity = json.load(f)
+                    return humidity            
     else:
         return 60
 
