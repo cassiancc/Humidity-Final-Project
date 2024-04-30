@@ -38,6 +38,11 @@
         <aside>Data current as of {{datetime}}</aside>
         
         
-
+<script>
+    console.log("Automatic reload set at 5 minutes.")
+setTimeout(() => {
+    location.reload()
+  }, 300000);
+</script>
     </body>
 </html>
