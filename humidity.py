@@ -10,16 +10,31 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24).hex()    
 temp = 5
 units = "F"
+# Above maxTemp we suggest to close doors and turn on the AC
+maxTemp = 80
+# Between minTemp and maxTemp we open doors
+minTemp = 65
+# Below minTemp we close doors
 
 @app.route('/settings/', methods=('GET', 'POST'))
 def create():
     if request.method == 'POST':
+        print(request.form)
         if 'metric' in request.form:
             global units
             units = "C"
         if "zip" in request.form:
             if request.form["zip"] != "":
                 print(f"Zip value {request.form['zip']}")
+        if "mintemp" in request.form:
+            if request.form["mintemp"] != "":
+                global minTemp
+                minTemp = float(request.form["mintemp"])
+        if "maxtemp" in request.form:
+            print(request.form["maxtemp"])
+            if request.form["maxtemp"] != "":
+                global maxTemp
+                maxTemp = float(request.form["maxtemp"])
         return redirect(url_for('index'))
     return render_template('settings.html')
 
@@ -50,11 +65,7 @@ apiurl = "http://dataservice.accuweather.com/currentconditions/v1/%s?apikey=%s" 
 # TODO Below should be configurable through dashboard
 refreshOnAccess = False
 precipitationProbabilityMax = 70
-# Above maxTemp we suggest to close doors and turn on the AC
-maxTemp = 80
-# Between minTemp and maxTemp we open doors
-minTemp = 65
-# Below minTemp we close doors
+
 
 # Lock for refreshing AccuWeather data
 lock = threading.Lock()
