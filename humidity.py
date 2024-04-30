@@ -4,7 +4,6 @@
 # Standard imports
 import time, datetime, threading, json, urllib.request, os
 from flask import Flask, render_template, request, url_for, flash, redirect
-from wtforms import Form, BooleanField, StringField, PasswordField, validators
 
 # Setup Flask app and DHT device.
 app = Flask(__name__)

@@ -24,6 +24,19 @@ main {
     height: 90vh;
     border-radius: 10px;
 }
+#settings {
+    width: 60%;
+    margin: auto;
+    background-color: #f6f0f0;
+    border-left: solid .3em bisque;
+    border-right: solid .3em bisque;
+    padding: 1em;
+    height: 90vh;
+    border-radius: 10px;
+}
+#settings h1 {
+    text-align: center;
+}
 
 
 header {

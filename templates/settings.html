@@ -12,17 +12,24 @@
             </div>
         </header>
         <main>
-            <div id="inside">
-                <h1>{% block title %} Add a New Message {% endblock %}</h1>
+            <div id="settings">
+                <h1>Configuration Settings</h1>
 
                 <form action="/settings" method="post">
-                    <label for="title">Title</label>
-                    <br>
                     <input type="checkbox" name="metric" checked="{{request.form['metric']}}" id="metric">
                     <label for="metric">Use Metric measurements (Celsius)</label>
                     <br>
-                    <input type="number" name="zip" id="zip" placeholder="Your zip code" value="{{request.form['zip']}}">
+                    <label for="zip">Zip code: </label>
+                    <input type="number" name="zip" id="zip" placeholder="41076" value="{{request.form['zip']}}">
                     <br>
+                    <label for="mintemp">Minimum temperature</label>
+                    <input type="number" name="mintemp" id="mintemp" placeholder="65" value="{{request.form['mintemp']}}">
+                    <br>
+
+                    <label for="maxtemp">Minimum temperature</label>
+                    <input type="number" name="maxtemp" id="maxtemp" placeholder="80" value="{{request.form['maxtemp']}}">
+                    <br>
+
                     <button type="submit">Submit</button>
                 </form>
             </div>
