@@ -110,8 +110,13 @@ def findOutsideIcon(data):
 
 def findDate(data):
     date = data[0]["LocalObservationDateTime"]
-    date = f'{date}'
     return date
+
+
+def findWeatherText(data):
+    text = data[0]["WeatherText"]
+    return text
+
 
 
 # Process current weather data
@@ -278,7 +283,7 @@ def index():
         refreshAccuWeather()
     data = loadData("recent")
     current = loadData("current")
-    return render_template('index.html', temp=processOutsideTemperature(current), insideHumidity=readDHT("c"), doors=updateDoors(), Fdoors=updateFutureDoors(), rain=processRainData(), local=readDHT("f"), datetime=findDate(data), icon=findOutsideIcon(current))
+    return render_template('index.html', temp=processOutsideTemperature(current), insideHumidity=readDHT("c"), doors=updateDoors(), Fdoors=updateFutureDoors(), rain=processRainData(), local=readDHT("f"), datetime=findDate(data), text=findWeatherText(current), icon=findOutsideIcon(current))
 
 if __name__ == '__main__':
     getCurrentLocationCodes()
