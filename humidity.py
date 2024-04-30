@@ -178,6 +178,14 @@ def getCurrentLocationCodes():
         with urllib.request.urlopen("https://ipapi.co/json") as url:
             data = json.loads(url.read().decode())
             setLocationCode(countryCode=data["country_code"].lower(), zipCode=data["postal"])
+    else:
+        global LOCATION_CODE
+        global COUNTRY_CODE
+        global ZIP_CODE
+        data = loadData("location")
+        LOCATION_CODE = data[0]["Key"]
+        COUNTRY_CODE = data[0]["Country"]["ID"].lower()
+        ZIP_CODE = data[0]["PrimaryPostalCode"]
 
 # Set location code from country and zip code
 def setLocationCode(countryCode: str, zipCode: str):
