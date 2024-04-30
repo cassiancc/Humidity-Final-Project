@@ -24,7 +24,7 @@ main {
     height: 90vh;
     border-radius: 10px;
 }
-#settings {
+div#settings {
     width: 60%;
     margin: auto;
     background-color: #f6f0f0;
@@ -34,7 +34,7 @@ main {
     height: 90vh;
     border-radius: 10px;
 }
-#settings h1 {
+div#settings h1 {
     text-align: center;
 }
 
@@ -63,10 +63,25 @@ body {
     background-color: bisque;
 }
 
-aside {
+#data {
     position: absolute;
     bottom: 0;
     background-color: bisque;
+}
+aside#settings {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background-color: bisque;
+}
+
+aside a {
+    color: black !important;
+}
+
+aside {
+    padding: .6em;
+    border-radius: 10px;
 }
 
 #outside-temp-header, #inside-temp-header {
