@@ -2,6 +2,7 @@
 # TODO - Cassian - Make location data configurable in frontend.
 
 # Standard imports
+import os
 import time
 import datetime
 import threading
@@ -156,9 +157,10 @@ def getFutureSubstantialRain(data):
 
 # Get country code and zip code from IP
 def getCurrentLocationCodes():
-    with urllib.request.urlopen("https://ipapi.co/json") as url:
-        data = json.loads(url.read().decode())
-    setLocationCode(countryCode=data["country_code"].lower(), zipCode=data["postal"])
+    if not os.path.exists("location.json"):
+        with urllib.request.urlopen("https://ipapi.co/json") as url:
+            data = json.loads(url.read().decode())
+            setLocationCode(countryCode=data["country_code"].lower(), zipCode=data["postal"])
 
 # Set location code from country and zip code
 def setLocationCode(countryCode: str, zipCode: str):
