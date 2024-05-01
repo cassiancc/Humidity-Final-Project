@@ -30,6 +30,10 @@
                     <input type="number" name="maxtemp" id="maxtemp" placeholder="80" value="{{request.form['maxtemp']}}">
                     <br>
 
+                    <label for="maxrain">Maximum percentage of rain</label>
+                    <input type="number" name="maxrain" id="maxrain" placeholder="70" value="{{request.form['maxrain']}}">
+                    <br>
+
                     <button type="submit">Submit</button>
                 </form>
                 <button onclick="sendReload()">Refresh Accuweather</button>

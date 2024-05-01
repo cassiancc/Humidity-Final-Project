@@ -1,25 +1,29 @@
-# TODO - Cassian - Improve dashboard design
-# TODO - Cassian - Make location data configurable in frontend.
-
 # Standard imports
 import time, datetime, threading, json, urllib.request, os
-from flask import Flask, render_template, request, url_for, flash, redirect
+from flask import Flask, render_template, request, url_for, redirect
 
-# Setup Flask app and DHT device.
+# Setup Flask app
 app = Flask(__name__)
+# Prevent forms from being used outside of the dashboard's intended use.
 app.config['SECRET_KEY'] = os.urandom(24).hex()    
 temp = 5
+# Default to Farenheit
 units = "F"
 # Above maxTemp we suggest to close doors and turn on the AC
 maxTemp = 80
-# Between minTemp and maxTemp we open doors
+# Below minTemp we close doors, between we open doors.
 minTemp = 65
-# Below minTemp we close doors
+# Refresh Accuweather whenever the page is accessed - mostly for debugging.
+refreshOnAccess = False
+# Maximum chance of rain.
+precipitationProbabilityMax = 70
+# User's ZIP code
+zip_code = None
+
 
 @app.route('/settings/', methods=('GET', 'POST'))
 def create():
     if request.method == 'POST':
-        print(request.form)
         if 'metric' in request.form:
             global units
             units = "C"
@@ -28,15 +32,20 @@ def create():
         if "zip" in request.form:
             if request.form["zip"] != "":
                 print(f"Zip value {request.form['zip']}")
+                global zip_code
+                zip_code = request.form['zip']
         if "mintemp" in request.form:
             if request.form["mintemp"] != "":
                 global minTemp
                 minTemp = float(request.form["mintemp"])
         if "maxtemp" in request.form:
-            print(request.form["maxtemp"])
             if request.form["maxtemp"] != "":
                 global maxTemp
                 maxTemp = float(request.form["maxtemp"])
+        if "maxrain" in request.form:
+            if request.form["maxrain"] != "":
+                global precipitationProbabilityMax
+                precipitationProbabilityMax = float(request.form["maxrain"])
         return redirect(url_for('index'))
     return render_template('settings.html')
 
@@ -54,6 +63,7 @@ def reloadFrontend():
 # While testing, allow for disabling DHT-22 to prevent crashes.
 dhtEnabled = True
 
+# Set up DHT-22
 if dhtEnabled == True:
     import adafruit_dht
     import board
@@ -72,12 +82,7 @@ API = readAPIKey()
 
 COUNTRY_CODE = None
 LOCATION_CODE = None
-ZIP_CODE = None
 apiurl = "http://dataservice.accuweather.com/currentconditions/v1/%s?apikey=%s" % (LOCATION_CODE, API)
-
-# TODO Below should be configurable through dashboard
-refreshOnAccess = False
-precipitationProbabilityMax = 70
 
 
 # Lock for refreshing AccuWeather data
@@ -87,7 +92,7 @@ lock = threading.Lock()
 def accuweather(endpoint):
     # 1 - Request location code from ZIP code and country code.
     if endpoint == "location":
-        apiurl = "http://dataservice.accuweather.com/locations/v1/postalcodes/%s/search?apikey=%s&q=%s&details=true" % (COUNTRY_CODE, API, ZIP_CODE)
+        apiurl = "http://dataservice.accuweather.com/locations/v1/postalcodes/%s/search?apikey=%s&q=%s&details=true" % (COUNTRY_CODE, API, zip_code)
     
     # 2 - Request current conditions for a location code.
     elif endpoint == "current":
@@ -149,16 +154,18 @@ def processOutsideTemperature(data):
     temperature = data[0]["Temperature"][unitType]["Value"]
     return temperature
 
+# Find Accuweather Icon to represent the weather.
 def findOutsideIcon(data):
     icon = data[0]["WeatherIcon"]
     icon = f'{icon:02}'
     return icon
 
+# Find date of Accuweather data.
 def findDate(data):
     date = data[0]["LocalObservationDateTime"]
     return date
 
-
+# Find Accuweather weather text.
 def findWeatherText(data):
     text = data[0]["WeatherText"]
     return text
@@ -204,19 +211,19 @@ def getCurrentLocationCodes():
     else:
         global LOCATION_CODE
         global COUNTRY_CODE
-        global ZIP_CODE
+        global zip_code
         data = loadData("location")
         LOCATION_CODE = data[0]["Key"]
         COUNTRY_CODE = data[0]["Country"]["ID"].lower()
-        ZIP_CODE = data[0]["PrimaryPostalCode"]
+        zip_code = data[0]["PrimaryPostalCode"]
 
 # Set location code from country and zip code
 def setLocationCode(countryCode: str, zipCode: str):
     global COUNTRY_CODE
-    global ZIP_CODE
+    global zip_code
     global LOCATION_CODE
     COUNTRY_CODE = countryCode
-    ZIP_CODE = zipCode
+    zip_code = zipCode
     try:
         data = requestData("location")
         LOCATION_CODE = data[0]["Key"]
@@ -260,8 +267,8 @@ def updateDoors():
     else:
         doors = openDoors(reason="The current temperature is preferred")
     return doors
-# Logic to decide whether to open or close doors
 
+# Logic to decide whether to open or close doors based off future data
 def updateFutureDoors():
     accuWeatherDataFuture = loadData("future1hour")
     # within the next hour
@@ -279,8 +286,6 @@ def updateFutureDoors():
          Fdoors = warnOpenDoors(reason="The future temperature is preferred")
     return Fdoors
 
-# TODO Display these messages on webpage
-
 def openDoors(reason: str):
     return f"{reason}. You should open your doors and windows now. "
 
@@ -293,7 +298,6 @@ def warnOpenDoors(reason: str):
 def warnCloseDoors(reason: str):
     return f"{reason}. You should close your doors and windows within the next hour. "
 
-# TODO Activatable through dashboard
 # Refresh AccuWeather data
 def refreshAccuWeather():
     lock.acquire()
@@ -366,6 +370,7 @@ def readDHT(read):
     else:
         return 60
 
+# Display data on Dashboard
 @app.route('/')
 def index():
     if refreshOnAccess:
@@ -374,7 +379,7 @@ def index():
     current = loadData("current")
     temperature = f'{processOutsideTemperature(current):.1f}°{units}'
 
-    return render_template('index.html', temp=temperature, insideHumidity=readDHT("H"), doors=updateDoors(), Fdoors=updateFutureDoors(), rain=processRainData(), local=readDHT(units), datetime=findDate(data), text=findWeatherText(current), icon=findOutsideIcon(current))
+    return render_template('index.html', zip_code=zip_code, temp=temperature, insideHumidity=readDHT("H"), doors=updateDoors(), Fdoors=updateFutureDoors(), rain=processRainData(), local=readDHT(units), datetime=findDate(data), text=findWeatherText(current), icon=findOutsideIcon(current))
 
 if __name__ == '__main__':
     getCurrentLocationCodes()
