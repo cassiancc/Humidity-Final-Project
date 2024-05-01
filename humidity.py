@@ -40,6 +40,17 @@ def create():
         return redirect(url_for('index'))
     return render_template('settings.html')
 
+
+
+
+@app.route('/reload/', methods=('GET', 'POST'))
+def reloadFrontend():
+    if request.method == 'POST':
+        refreshAccuWeather()
+        return redirect(url_for('index'))
+
+
+
 # While testing, allow for disabling DHT-22 to prevent crashes.
 dhtEnabled = True
 

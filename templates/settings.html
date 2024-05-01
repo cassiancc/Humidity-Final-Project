@@ -32,15 +32,23 @@
 
                     <button type="submit">Submit</button>
                 </form>
+                <button onclick="sendReload()">Refresh Accuweather</button>
             </div>
     
         
         
 <script>
-    console.log("Automatic reload set at 5 minutes.")
-setTimeout(() => {
-    location.reload()
-  }, 300000);
+    function sendReload() {
+        fetch(`/reload/`, 
+    {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+    });
+    }
+   
 </script>
     </body>
 </html>
